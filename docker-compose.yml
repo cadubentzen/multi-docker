@@ -4,6 +4,7 @@ services:
   client:
     image: cadubentzen/multi-client
     mem_limit: 128m
+    hostname: client
 
   api:
     image: cadubentzen/multi-server
@@ -16,6 +17,7 @@ services:
       PGHOST: $PGHOST
       PGDATABASE: $PGPASSWORD
       PGPORT: $PGPORT
+    hostname: api
 
   worker:
     image: cadubentzen/multi-worker
@@ -23,6 +25,7 @@ services:
     environment:
       REDIS_HOST: $REDIS_HOST
       REDIS_PORT: $REDIS_PORT
+    hostname: worker
 
   nginx:
     image: cadubentzen/multi-nginx
@@ -32,3 +35,4 @@ services:
       - client
     ports:
       - 80:80
+    hostname: nginx
