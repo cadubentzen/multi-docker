@@ -15,7 +15,7 @@ services:
       PGUSER: $PGUSER
       PGPASSWORD: $PGPASSWORD
       PGHOST: $PGHOST
-      PGDATABASE: $PGPASSWORD
+      PGDATABASE: $PGDATABASE
       PGPORT: $PGPORT
     hostname: api
 
