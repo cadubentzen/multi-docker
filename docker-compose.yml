@@ -1,63 +1,34 @@
 version: "3"
 
 services:
-  postgres:
-    image: postgres:14-alpine
-    restart: always
-    environment:
-      POSTGRES_PASSWORD: postgres_password
+  client:
+    image: cadubentzen/multi-client
+    mem_limit: 128m
 
-  redis:
-    image: redis:6-alpine
+  api:
+    image: cadubentzen/multi-server
+    mem_limit: 128m
+    environment:
+      REDIS_HOST: $REDIS_HOST
+      REDIS_PORT: $REDIS_PORT
+      PGUSER: $PGUSER
+      PGPASSWORD: $PGPASSWORD
+      PGHOST: $PGHOST
+      PGDATABASE: $PGPASSWORD
+      PGPORT: $PGPORT
+
+  worker:
+    image: cadubentzen/multi-worker
+    mem_limit: 128m
+    environment:
+      REDIS_HOST: $REDIS_HOST
+      REDIS_PORT: $REDIS_PORT
 
   nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile.dev
-    restart: always
-    ports:
-      - 8080:80
+    image: cadubentzen/multi-nginx
+    mem_limit: 128m
     depends_on:
       - api
       - client
-
-  api:
-    build:
-      context: ./server
-      dockerfile: Dockerfile.dev
-    volumes:
-      - /app/node_modules
-      - ./server:/app
-    depends_on:
-      - postgres
-      - redis
-    environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      PGUSER: postgres
-      PGPASSWORD: postgres_password
-      PGHOST: postgres
-      PGDATABASE: postgres
-      PGPORT: 5432
-
-  client:
-    build:
-      context: ./client
-      dockerfile: Dockerfile.dev
-    volumes:
-      - /app/node_modules
-      - ./client:/app
-      - ./client/node_modules/.cache:/app/node_modules/.cache
-
-  worker:
-    build:
-      context: ./worker
-      dockerfile: Dockerfile.dev
-    volumes:
-      - /app/node_modules
-      - ./worker:/app
-    depends_on:
-      - redis
-    environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+    ports:
+      - 80:80
