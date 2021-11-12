@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: worker
-          image: cadubentzen/multi-worker:1e7bf7b77add918b16eb72827e15f023e7a0bb7d
+          image: WORKER:TAG
           env:
             - name: REDIS_HOST
               value: redis

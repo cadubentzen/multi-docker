@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [master]
 
+env:
+  GKE_CLUSTER: multi-cluster
+  GKE_ZONE: europe-west1-b
+
 jobs:
   test-client:
     runs-on: ubuntu-latest
@@ -42,3 +46,41 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Publish ${{ matrix.component }}
         run: docker push cadubentzen/multi-${{ matrix.component }}:${{ github.sha }}
+
+  deploy-k8s:
+    if: github.ref == 'refs/heads/master'
+    concurrency: k8s
+    runs-on: ubuntu-latest
+    name: Deploy to k8s
+    needs: prod-build-and-publish
+    steps:
+      - uses: actions/checkout@v2
+      - uses: google-github-actions/setup-gcloud@v0.2.0
+        with:
+          service_account_key: ${{ secrets.GKE_SERVICE_ACCOUNT_KEY }}
+          project_id: ${{ secrets.GKE_PROJECT }}
+      - run: |-
+          gcloud --quiet auth configure-docker
+      - uses: google-github-actions/get-gke-credentials@v0.2.1
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_ZONE }}
+          credentials: ${{ secrets.GKE_SERVICE_ACCOUNT_KEY }}
+      - name: Set up Kustomize
+        run: |-
+          cd ./k8s
+          curl -L https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.4.1/kustomize_v4.4.1_linux_amd64.tar.gz | tar xz
+          chmod u+x ./kustomize
+      - name: Deploy
+        run: |-
+          cd ./k8s
+          ./kustomize edit set image CLIENT:TAG=cadubentzen/multi-client:$GITHUB_SHA
+          ./kustomize edit set image API:TAG=cadubentzen/multi-server:$GITHUB_SHA
+          ./kustomize edit set image WORKER:TAG=cadubentzen/multi-worker:$GITHUB_SHA
+          ./kustomize build . | kubectl apply -f -
+          kubectl rollout status deployment/client
+          kubectl rollout status deployment/api
+          kubectl rollout status deployment/worker
+          kubectl rollout status deployment/postgres
+          kubectl rollout status deployment/redis
+          kubectl get services -o wide

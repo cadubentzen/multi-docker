@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: cadubentzen/multi-server:1e7bf7b77add918b16eb72827e15f023e7a0bb7d
+          image: API:TAG
           ports:
             - containerPort: 5000
           env:

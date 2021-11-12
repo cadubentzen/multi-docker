@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: client
-          image: cadubentzen/multi-client:1e7bf7b77add918b16eb72827e15f023e7a0bb7d
+          image: CLIENT:TAG
           ports:
             - containerPort: 3000
