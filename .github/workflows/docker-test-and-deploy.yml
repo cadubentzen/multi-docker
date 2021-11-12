@@ -42,25 +42,3 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Publish ${{ matrix.component }}
         run: docker push cadubentzen/multi-${{ matrix.component }}:${{ github.sha }}
-
-  prod-deploy-eb:
-    if: github.ref == 'refs/heads/master'
-    needs: prod-build-and-publish
-    concurrency: eb
-    runs-on: ubuntu-latest
-    name: Deploy to Elastic Beanstalk
-    steps:
-      - uses: actions/checkout@v2
-      - name: Generate deployment package
-        run: zip deploy.zip docker-compose.yml
-      - name: Beanstalk Deploy
-        uses: einaregilsson/beanstalk-deploy@v18
-        with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          region: eu-west-1
-          application_name: multi-docker
-          environment_name: Multidocker-env
-          version_label: ${{ github.sha }}
-          existing_bucket_name: elasticbeanstalk-eu-west-1-462787720787
-          deployment_package: deploy.zip

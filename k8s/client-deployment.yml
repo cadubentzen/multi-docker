@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      component: web
+  template:
+    metadata:
+      labels:
+        component: web
+    spec:
+      containers:
+        - name: client
+          image: cadubentzen/multi-client:1e7bf7b77add918b16eb72827e15f023e7a0bb7d
+          ports:
+            - containerPort: 3000
