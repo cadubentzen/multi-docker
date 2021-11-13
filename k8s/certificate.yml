@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: k8s-cadubentzen-com
+spec:
+  secretName: k8s-cadubentzen-com-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: k8s.cadubentzen.com
+  dnsNames:
+    - k8s.cadubentzen.com
